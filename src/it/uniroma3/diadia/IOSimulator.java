@@ -1,56 +1,59 @@
 package it.uniroma3.diadia;
 
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 public class IOSimulator implements IO {
-
-	private String[] righeLette;
-	private int indiceRigheLette;
-
-	public String[] getMessaggiProdotti() {
-		return messaggiProdotti;
+	
+	private List<String> righeDaLeggere;
+	private int indiceRigheDaLeggere;
+	private Map<Integer, List<String>> indice2messaggiProdotti;
+	private int ultimoIndiceMappaMostrato;
+	private int ultimoIndiceListaMostrato;
+	
+	public IOSimulator(List<String> righeDaLeggere) {
+		this.righeDaLeggere = righeDaLeggere;
+		this.indiceRigheDaLeggere = 0;
+		this.indice2messaggiProdotti = new HashMap<Integer, List<String>>();
+		this.ultimoIndiceListaMostrato = 0;
+		this.ultimoIndiceListaMostrato = 0;
 	}
 
-	public void setMessaggiProdotti(String[] messaggiProdotti) {
-		this.messaggiProdotti = messaggiProdotti;
-	}
-
-	private String[] messaggiProdotti;
-	private int indiceMessaggiProdotti;
-	private int indiceMessaggiMostrati;
-
-	public IOSimulator(String[] righeDaLeggere) {
-		this.righeLette = righeDaLeggere;
-		this.indiceRigheLette = 0;
-		this.indiceMessaggiMostrati = 0;
-		this.messaggiProdotti = new String[42*23];
+	@Override
+	public void mostraMessaggio(String messaggio) {
+		if(!this.indice2messaggiProdotti.containsKey(this.indiceRigheDaLeggere))
+			this.indice2messaggiProdotti.put(this.indiceRigheDaLeggere, new LinkedList<String>());
+		List<String> l = this.indice2messaggiProdotti.get(this.indiceRigheDaLeggere);
+		l.add(messaggio);
 	}
 
 	@Override
 	public String leggiRiga() {
-		String riga = null;
-
-		riga = this.righeLette[indiceRigheLette];
-		this.indiceRigheLette++;
-		return riga;
+		String rigaLetta = this.righeDaLeggere.get(this.indiceRigheDaLeggere);
+		this.indiceRigheDaLeggere++;
+		return rigaLetta;
 	}
-
-	@Override
-	public void mostraMessaggio(String msg) {
-		this.messaggiProdotti[indiceMessaggiProdotti] = msg;
-		this.indiceMessaggiProdotti++;
-	}
-
-	//	public String[] getRigheMostrate() {
-	//		return righeMostrate;
-	//	}
-
+	
 	public String nextMessaggio() {
-		String next = this.messaggiProdotti[this.indiceMessaggiMostrati];
-		this.indiceMessaggiMostrati++;
-		return next;
+		List<String> messaggiDaMostrare = this.indice2messaggiProdotti.get(this.ultimoIndiceMappaMostrato);
+		if(this.ultimoIndiceListaMostrato < messaggiDaMostrare.size()) {
+			String messaggio = messaggiDaMostrare.get(this.ultimoIndiceListaMostrato);
+			this.ultimoIndiceListaMostrato++;
+			return messaggio;
+		}
+		this.ultimoIndiceListaMostrato = 0;
+		this.ultimoIndiceMappaMostrato++;
+		return this.nextMessaggio();
 	}
-
+	
 	public boolean hasNextMessaggio() {
-		return this.indiceMessaggiMostrati < this.indiceMessaggiProdotti;
+		List<String> messaggiDaMostrare = this.indice2messaggiProdotti.get(this.ultimoIndiceMappaMostrato);
+		if(this.ultimoIndiceListaMostrato < messaggiDaMostrare.size()) 
+			return true;
+		else
+			return this.indice2messaggiProdotti.containsKey(this.ultimoIndiceMappaMostrato +1);
 	}
 
 }

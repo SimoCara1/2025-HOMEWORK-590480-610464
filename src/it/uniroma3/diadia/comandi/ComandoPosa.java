@@ -1,47 +1,34 @@
 package it.uniroma3.diadia.comandi;
 
-import it.uniroma3.diadia.IO;
 import it.uniroma3.diadia.Partita;
 import it.uniroma3.diadia.attrezzi.Attrezzo;
+import it.uniroma3.diadia.giocatore.Borsa;
 
-public class ComandoPosa implements Comando {
-	private IO io;
-	private String nomeAttrezzo;
-	private final static String NOME = "posa";
+public class ComandoPosa extends AbstractComando {
 
+	private static final String NOME = "posa";
+	
+	public ComandoPosa() {
+		super.setNome(NOME);
+	}
 
 	@Override
 	public void esegui(Partita partita) {
-		Attrezzo a = partita.getGiocatore().getBorsa().getAttrezzo(nomeAttrezzo);
-
-		if(partita.getStanzaCorrente().getNumeroAttrezziPossibili()>0) {
-			partita.getLabirinto().getStanzaCorrente().addAttrezzo(a);
-			partita.getGiocatore().getBorsa().removeAttrezzo(nomeAttrezzo);
+		Borsa borsa = partita.getGiocatore().getBorsa();
+		Attrezzo attrezzoDaPosare = borsa.getAttrezzo(super.getParametro());
+		if (attrezzoDaPosare == null) {
+			super.getIO().mostraMessaggio("Attrezzo " + attrezzoDaPosare + " non presente nella borsa");
+			return;
 		}
-		else {
-			io.mostraMessaggio("Non c'e' spazio nella stanza per poter inserire questo attrezzo!");
+		
+		boolean attrezzoPosato = partita.getStanzaCorrente().addAttrezzo(attrezzoDaPosare);
+		if (!attrezzoPosato) {
+			super.getIO().mostraMessaggio("Non c'è più spazio per nuovi attrezzi nella stanza");
+			return;
 		}
-	}
-
-	@Override
-	public void setParametro(String parametro) {
-		this.nomeAttrezzo  = parametro;
-
-	}
-
-	@Override
-	public String getParametro() {
-		return this.nomeAttrezzo;
-	}
-
-	@Override
-	public void setIo(IO io) {
-		this.io = io;
-	}
-
-	@Override
-	public String getNome() {
-		return NOME;
+		
+		borsa.removeAttrezzo(super.getParametro());
+		super.getIO().mostraMessaggio("Attrezzo " + super.getParametro() + " posato!");
 	}
 
 }
